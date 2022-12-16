@@ -44,6 +44,7 @@ def generate_graph_1():
     liczba_goli_suma = liczba_goli_g + liczba_goli_ng
     print(f"Liczba meczow w sumie: {liczba_meczy_suma} \n"
           f"liczba golow w sumie: {liczba_goli_suma}")
+    print("s")
 
 
     #ad.2 liczba straconych goli
