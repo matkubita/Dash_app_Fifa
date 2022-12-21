@@ -3,12 +3,14 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
+import dash_2
 
 
 def main():
 
     #initialize the app with theme
-    app = Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
+    app = Dash(__name__, external_stylesheets=[dbc.themes.MINTY])
 
     #get data frame
     df = px.data.medals_long()
@@ -30,17 +32,21 @@ def main():
         Input(dropdown, component_property='value')
     )
     def update_graph(user_input):
+        dict_res = dash_2.analyze_team("Poland")
         if (user_input=='Bar Plot'):
-            fig = px.bar(data_frame=df, x="nation", y="count", color="medal",
-                         title="Elegancki bar plot")
+
+
+            fig = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=dict_res.get("zdobyte_gole"),
+                title={'text': "Zdobyte gole"},
+                domain={'x': [0, 1], 'y': [0, 1]}
+            ))
         elif (user_input=="Scatter Plot"):
-            fig = px.scatter(data_frame=df, x = "count", y="nation", color="medal",
-                             title="Elegancki Scatter Plot",
-                             labels={
-                                 "count": "licznosc",
-                                 "nation": "Panstwo, nacja",
-                                 "medal":"jaki medal"
-                             })
+            zdobyte_gole = dict_res.get("zdobyte_gole")
+            stracone_gole = dict_res.get("strcone_gole")
+            fig = go.Pie(labels=['Zdobyte Gole', 'Stracone gole'],
+                         values=[zdobyte_gole, stracone_gole])
         return fig
 
     # run the app

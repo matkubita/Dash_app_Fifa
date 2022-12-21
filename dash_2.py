@@ -3,7 +3,10 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import numpy as np
 import pandas as pd
+
 pd.options.mode.chained_assignment = None
+import plotly.graph_objects as go
+
 
 def main():
     print("bonjounrno")
@@ -19,103 +22,29 @@ def main():
 
     # maybe take the data from world championship soccer 2022 !!! ->
 
+    # ad.3 przeciwnik najtrudniejszy i naltwiejszy -> czyli z kim wygrali najwiecej meczow i z kim przegrali najwiecej meczow
+
+    print(analyze_team("France"))
+
 
 def generate_graph_1():
-    df = pd.read_csv("C:/Users/Uzytkownik/PycharmProjects/dash_lib/international_matches.csv")
+    print("graph")
 
-    df_brazil = df[(df["home_team"] == "Brazil") | (df["away_team"] == "Brazil")]
-    print(df_brazil)
+    dict_res = analyze_team("Poland")
+    print(dict_res)
 
-    #ad.1 liczba strzelonych goli w sumie
+    zdobyte_gole = dict_res.get("zdobyte_gole")
+    stracone_gole = dict_res.get("strcone_gole")
+    mecze = dict_res.get("rozegrane_mecze")
 
-    #gdy byli gospodarzami
-    liczba_meczy_jako_gospodarz = len(df_brazil.loc[df["home_team"] == "Brazil"])
-    liczba_goli_g = df_brazil.loc[df["home_team"] == "Brazil"]['home_team_score'].sum()
-    print(f"Liczba goli jako gospodarze: {liczba_goli_g}")
-    print(f"liczba meczy jako gospodarze: {liczba_meczy_jako_gospodarz}")
+    fig = go.Figure(go.Sunburst(
+        labels=['rozegrane mecze', 'zdobyte gole', 'stracone gole'],
+        parents=['', 'rozegrane mecze', 'rozegrane mecze'],
+        values=[mecze, zdobyte_gole, stracone_gole],
+    ))
+    fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
 
-    #gdy nie byli gospodarzemi
-    liczba_meczy_jako_nie_gospodarze = len(df_brazil.loc[df["away_team"] == "Brazil"])
-    liczba_goli_ng = df_brazil.loc[df["away_team"] == "Brazil"]['away_team_score'].sum()
-    print(f"Liczba goli jako NIE gospodarze: {liczba_goli_ng}")
-    print(f"liczba meczy jako NIE gospodarze: {liczba_meczy_jako_nie_gospodarze}")
-
-    liczba_meczy_suma = liczba_meczy_jako_nie_gospodarze + liczba_meczy_jako_gospodarz
-    liczba_goli_suma = liczba_goli_g + liczba_goli_ng
-    print(f"Liczba meczow w sumie: {liczba_meczy_suma} \n"
-          f"liczba golow w sumie: {liczba_goli_suma}")
-
-    # ad.2 liczba straconych goli
-    gole_stracone_gdy_gospodarze = df_brazil.loc[df["home_team"] == "Brazil"]['away_team_score'].sum()
-    gole_stracone_gdy_nie_gospodarze = df_brazil.loc[df["away_team"] == "Brazil"]['home_team_score'].sum()
-    print(f"gole stracone gdy byli gospodarzami = {gole_stracone_gdy_gospodarze}")
-    print(f"gole stracone gdy nie byli gospodarzami = {gole_stracone_gdy_nie_gospodarze}")
-    gole_stracone_w_sumie =gole_stracone_gdy_gospodarze+gole_stracone_gdy_nie_gospodarze
-    print(f"gole stracone w sumie {gole_stracone_w_sumie}")
-
-    print(f"bilans goli (strzelone-stracone): {liczba_goli_suma-gole_stracone_w_sumie}")
-
-
-    #ad.3 przeciwnik najtrudniejszy i naltwiejszy -> czyli z kim wygrali najwiecej meczow i z kim przegrali najwiecej meczow
-
-
-    print(df.columns)
-
-    df_licznosc_meczow = df_brazil.groupby(['home_team','away_team']).size().reset_index()
-    print(df_licznosc_meczow)
-    print("\n")
-    # print(df_brazil.loc[(df_brazil['home_team'] == 'Brazil') & (df_brazil['away_team'] =='Australia')][['home_team','away_team']])
-
-
-    result_column_win_or_lost = df_brazil.apply(lambda row: win_or_lost(row), axis=1)
-    df_brazil['win_or_lost'] = result_column_win_or_lost
-
-    print(df_brazil.head())
-
-    df_wygrane = df_brazil[df_brazil['win_or_lost']==1].\
-        groupby(['home_team','away_team'])['win_or_lost'].count()
-    print(df_wygrane)
-
-    df_przegrane = df_brazil[df_brazil['win_or_lost']==-1].\
-        groupby(['home_team','away_team'])['win_or_lost'].count()
-
-
-
-    df_remis = df_brazil[df_brazil['win_or_lost']==0].\
-        groupby(['home_team','away_team'])['win_or_lost'].count()
-
-
-
-    print("\n")
-
-
-    pd_result = pd.merge(df_licznosc_meczow,df_wygrane, how='left', left_on=['home_team', 'away_team'], right_on=['home_team', 'away_team'])
-    pd_result = pd.merge(pd_result, df_przegrane,how='left', left_on=['home_team', 'away_team'], right_on=['home_team', 'away_team'])
-    pd_result = pd.merge(pd_result, df_remis,how='left', left_on=['home_team', 'away_team'], right_on=['home_team', 'away_team'])
-    print(pd_result.columns)
-    pd_result.rename(columns={'home_team' : 'home_team',
-                            'away_team' : 'away_team',
-                            0:'liczba_meczy',
-                            'win_or_lost_x':'wygrane',
-                            'win_or_lost_y':'przegrane',
-                            'win_or_lost':'remis'}, inplace=True)
-    pd_result.fillna(0,inplace=True)
-    print(pd_result)
-    print(pd_result.columns)
-
-    print("\n")
-    print("Brazylia VS Argentyna")
-    print("Gdy Brazylia NIE byla gospodarzem: ")
-    print(f"Rozegrali w sumie: {pd_result[(pd_result['home_team'] =='Argentina') & (pd_result['away_team']=='Brazil')].iloc[0]['liczba_meczy']} spotkan")
-    print(f"Z czego wygrala Argentyna = {pd_result[(pd_result['home_team'] =='Argentina') & (pd_result['away_team']=='Brazil')].iloc[0]['wygrane']}")
-    print(f"Z czego wygrala Brazylia = {pd_result[(pd_result['home_team'] =='Argentina') & (pd_result['away_team']=='Brazil')].iloc[0]['przegrane']}")
-    print(f"Z czego REMIS = {pd_result[(pd_result['home_team'] =='Argentina') & (pd_result['away_team']=='Brazil')].iloc[0]['remis']}")
-
-
-    print("\n\n")
-    print("STATISTICS ")
-    analyze_games("Poland", "Germany")
-
+    fig.show()
 
 
 def win_or_lost(row):
@@ -125,6 +54,52 @@ def win_or_lost(row):
         return -1
     return 0
 
+
+def analyze_team(team_name):
+    # analyze a given team and caculate: numer of goals scored, goals conceded, number of games, ...
+
+    # filter data
+    df = pd.read_csv("C:/Users/Uzytkownik/PycharmProjects/dash_lib/international_matches.csv")
+    df_team = df[(df["home_team"] == team_name) | (df["away_team"] == team_name)]
+
+    # calculate number of goals
+    liczba_goli_g = df_team.loc[df["home_team"] == team_name]['home_team_score'].sum()
+    liczba_goli_ng = df_team.loc[df["away_team"] == "Brazil"]['away_team_score'].sum()
+    gole_stracone_gdy_gospodarze = df_team.loc[df["home_team"] == team_name]['away_team_score'].sum()
+    gole_stracone_gdy_nie_gospodarze = df_team.loc[df["away_team"] == team_name]['home_team_score'].sum()
+
+    gole_stracone_w_sumie = gole_stracone_gdy_gospodarze + gole_stracone_gdy_nie_gospodarze
+    liczba_goli_suma = liczba_goli_g + liczba_goli_ng
+    bilans = liczba_goli_suma - gole_stracone_w_sumie
+
+    # calculate number of games
+    liczba_meczy_jako_gospodarz = len(df_team.loc[df["home_team"] == team_name])
+    liczba_meczy_jako_nie_gospodarze = len(df_team.loc[df["away_team"] == team_name])
+    liczba_meczy_suma = liczba_meczy_jako_nie_gospodarze + liczba_meczy_jako_gospodarz
+
+    # caculate mean for: offense_score, midfield_score, defense_score
+    mean_offense_home = df_team.loc[df["home_team"] == team_name]['home_team_mean_offense_score'].mean()
+    mean_offense_away = df_team.loc[df["away_team"] == team_name]['away_team_mean_offense_score'].mean()
+    mean_offense = (mean_offense_away + mean_offense_home) / 2
+    mean_defense_home = df_team.loc[df["home_team"] == team_name]['home_team_mean_defense_score'].mean()
+    mean_defense_away = df_team.loc[df["away_team"] == team_name]['away_team_mean_defense_score'].mean()
+    mean_defense = (mean_defense_home + mean_defense_away) / 2
+    mean_midfield_score_home = df_team.loc[df["home_team"] == team_name]['home_team_mean_midfield_score'].mean()
+    mean_midfield_score_away = df_team.loc[df["away_team"] == team_name]['away_team_mean_midfield_score'].mean()
+    mean_midfield = (mean_midfield_score_home + mean_midfield_score_away) / 2
+
+    result_tablica = {"zdobyte_gole": liczba_goli_suma,
+                      "stracone_gole": gole_stracone_w_sumie,
+                      "bilans_goli": bilans,
+                      "rozegrane_mecze": liczba_meczy_suma,
+                      "mean_offense": mean_offense,
+                      "mean_defense": mean_defense,
+                      "mean_midfield": mean_midfield,
+                      "last_game": df_team.tail(1)}
+
+    return result_tablica
+
+
 def analyze_data():
     df = pd.read_csv("C:/Users/Uzytkownik/PycharmProjects/dash_lib/international_matches.csv")
     print(df.head(5))
@@ -133,83 +108,111 @@ def analyze_data():
     print(df.describe())
     print(df.date)
 
+
 def analyze_games(team_1, team_2):
     # read the data
     df = pd.read_csv("C:/Users/Uzytkownik/PycharmProjects/dash_lib/international_matches.csv")
 
-    assert (  team_1 in df.home_team.unique()  ) | (  team_1 in df.away_team.unique()  ), "druzyny 1 nie ma"
-    assert (  team_2 in df.home_team.unique()  ) | (  team_2 in df.away_team.unique()  ), "druzyny 2 nie ma"
+    assert (team_1 in df.home_team.unique()) | (team_1 in df.away_team.unique()), "druzyny 1 nie ma"
+    assert (team_2 in df.home_team.unique()) | (team_2 in df.away_team.unique()), "druzyny 2 nie ma"
 
-
-
-    #filter the data
+    # filter the data
     df_team = df[(df["home_team"] == team_1) | (df["away_team"] == team_1)]
-    df_licznosc_meczow = df_team.groupby(['home_team','away_team']).size().reset_index()
+    df_licznosc_meczow = df_team.groupby(['home_team', 'away_team']).size().reset_index()
 
-    #add column with win or lost
+    # add column with win or lost
     result_column_win_or_lost = df_team.apply(lambda row: win_or_lost(row), axis=1)
     df_team['win_or_lost'] = result_column_win_or_lost
 
-    #add new columns -> win, lost or tie
-    df_wygrane = df_team[df_team['win_or_lost']==1].\
-        groupby(['home_team','away_team'])['win_or_lost'].count()
-    df_przegrane = df_team[df_team['win_or_lost']==-1].\
-        groupby(['home_team','away_team'])['win_or_lost'].count()
-    df_remis = df_team[df_team['win_or_lost']==0].\
-        groupby(['home_team','away_team'])['win_or_lost'].count()
-    pd_result = pd.merge(df_licznosc_meczow,df_wygrane, how='left', left_on=['home_team', 'away_team'], right_on=['home_team', 'away_team'])
-    pd_result = pd.merge(pd_result, df_przegrane,how='left', left_on=['home_team', 'away_team'], right_on=['home_team', 'away_team'])
-    pd_result = pd.merge(pd_result, df_remis,how='left', left_on=['home_team', 'away_team'], right_on=['home_team', 'away_team'])
-    pd_result.rename(columns={'home_team' : 'home_team',
-                            'away_team' : 'away_team',
-                            0:'liczba_meczy',
-                            'win_or_lost_x':'wygrane',
-                            'win_or_lost_y':'przegrane',
-                            'win_or_lost':'remis'}, inplace=True)
-    pd_result.fillna(0,inplace=True)
+    # add new columns -> win, lost or tie
+    df_wygrane = df_team[df_team['win_or_lost'] == 1]. \
+        groupby(['home_team', 'away_team'])['win_or_lost'].count()
+    df_przegrane = df_team[df_team['win_or_lost'] == -1]. \
+        groupby(['home_team', 'away_team'])['win_or_lost'].count()
+    df_remis = df_team[df_team['win_or_lost'] == 0]. \
+        groupby(['home_team', 'away_team'])['win_or_lost'].count()
+    pd_result = pd.merge(df_licznosc_meczow, df_wygrane, how='left', left_on=['home_team', 'away_team'],
+                         right_on=['home_team', 'away_team'])
+    pd_result = pd.merge(pd_result, df_przegrane, how='left', left_on=['home_team', 'away_team'],
+                         right_on=['home_team', 'away_team'])
+    pd_result = pd.merge(pd_result, df_remis, how='left', left_on=['home_team', 'away_team'],
+                         right_on=['home_team', 'away_team'])
+    pd_result.rename(columns={'home_team': 'home_team',
+                              'away_team': 'away_team',
+                              0: 'liczba_meczy',
+                              'win_or_lost_x': 'wygrane',
+                              'win_or_lost_y': 'przegrane',
+                              'win_or_lost': 'remis'}, inplace=True)
+    pd_result.fillna(0, inplace=True)
 
     # print statistics team_1 VS team_2
     print("\n")
     print(f"{team_1} VS {team_2}")
 
-    BYL_MECZ_TEAM1_vs_TEAM2 = not(pd_result[(pd_result['home_team'] ==team_1) & (pd_result['away_team']==team_2)].empty)
+    BYL_MECZ_TEAM1_vs_TEAM2 = not (
+        pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].empty)
 
-    BYL_MECZ_TEAM2_vs_TEAM1 = not (pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].empty)
+    BYL_MECZ_TEAM2_vs_TEAM1 = not (
+        pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].empty)
 
     if (BYL_MECZ_TEAM2_vs_TEAM1):
         print(f"Gdy {team_2} byl gospodarzem: ")
-        print(f"Rozegrali w sumie: {pd_result[(pd_result['home_team'] ==team_2) & (pd_result['away_team']==team_1)].iloc[0]['liczba_meczy']} spotkan")
-        print(f"Z czego wygral {team_2} = {pd_result[(pd_result['home_team'] ==team_2) & (pd_result['away_team']==team_1)].iloc[0]['wygrane']}")
-        print(f"Z czego wygral {team_1} = {pd_result[(pd_result['home_team'] ==team_2) & (pd_result['away_team']==team_1)].iloc[0]['przegrane']}")
-        print(f"Z czego REMIS = {pd_result[(pd_result['home_team'] ==team_2) & (pd_result['away_team']==team_1)].iloc[0]['remis']}")
+        print(
+            f"Rozegrali w sumie: {pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['liczba_meczy']} spotkan")
+        print(
+            f"Z czego wygral {team_2} = {pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['wygrane']}")
+        print(
+            f"Z czego wygral {team_1} = {pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['przegrane']}")
+        print(
+            f"Z czego REMIS = {pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['remis']}")
     else:
         print(f"nie bylo meczu {team_2} jako gospodarze")
 
     if (BYL_MECZ_TEAM1_vs_TEAM2):
         print(f"Gdy {team_1} byl gospodarzem: ")
-        print(f"Rozegrali w sumie: {pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['liczba_meczy']} spotkan")
-        print(f"Z czego wygrala {team_2} = {pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['przegrane']}")
-        print(f"Z czego wygrala {team_1} = {pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['wygrane']}")
-        print(f"Z czego REMIS = {pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['remis']}")
+        print(
+            f"Rozegrali w sumie: {pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['liczba_meczy']} spotkan")
+        print(
+            f"Z czego wygrala {team_2} = {pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['przegrane']}")
+        print(
+            f"Z czego wygrala {team_1} = {pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['wygrane']}")
+        print(
+            f"Z czego REMIS = {pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['remis']}")
     else:
         print(f"Nie bylo meczu {team_1} jako gospodarze")
 
     print("SUMA:")
 
     if (BYL_MECZ_TEAM1_vs_TEAM2 and BYL_MECZ_TEAM2_vs_TEAM1):
-        suma_meczow = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['liczba_meczy'] + pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['liczba_meczy']
-        wygrane_team_1 = pd_result[(pd_result['home_team'] ==team_1) & (pd_result['away_team']==team_2)].iloc[0]['wygrane'] + pd_result[(pd_result['home_team'] ==team_2) & (pd_result['away_team']==team_1)].iloc[0]['przegrane']
-        wygrane_team_2 = pd_result[(pd_result['home_team'] ==team_2) & (pd_result['away_team']==team_1)].iloc[0]['wygrane'] + pd_result[(pd_result['home_team'] ==team_1) & (pd_result['away_team']==team_2)].iloc[0]['przegrane']
-        remisy = pd_result[(pd_result['home_team'] ==team_2) & (pd_result['away_team']==team_1)].iloc[0]['remis'] + pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['remis']
-    elif (BYL_MECZ_TEAM1_vs_TEAM2 and not(BYL_MECZ_TEAM2_vs_TEAM1)):
-        suma_meczow = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['liczba_meczy']
-        wygrane_team_1 = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['wygrane']
-        wygrane_team_2 = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['przegrane']
+        suma_meczow = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0][
+                          'liczba_meczy'] + \
+                      pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0][
+                          'liczba_meczy']
+        wygrane_team_1 = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0][
+                             'wygrane'] + \
+                         pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0][
+                             'przegrane']
+        wygrane_team_2 = pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0][
+                             'wygrane'] + \
+                         pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0][
+                             'przegrane']
+        remisy = pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['remis'] + \
+                 pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['remis']
+    elif (BYL_MECZ_TEAM1_vs_TEAM2 and not (BYL_MECZ_TEAM2_vs_TEAM1)):
+        suma_meczow = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0][
+            'liczba_meczy']
+        wygrane_team_1 = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0][
+            'wygrane']
+        wygrane_team_2 = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0][
+            'przegrane']
         remisy = pd_result[(pd_result['home_team'] == team_1) & (pd_result['away_team'] == team_2)].iloc[0]['remis']
-    elif (not(BYL_MECZ_TEAM1_vs_TEAM2) and BYL_MECZ_TEAM2_vs_TEAM1):
-        suma_meczow = pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['liczba_meczy']
-        wygrane_team_1 = pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['przegrane']
-        wygrane_team_2 = pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['wygrane']
+    elif (not (BYL_MECZ_TEAM1_vs_TEAM2) and BYL_MECZ_TEAM2_vs_TEAM1):
+        suma_meczow = pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0][
+            'liczba_meczy']
+        wygrane_team_1 = pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0][
+            'przegrane']
+        wygrane_team_2 = pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0][
+            'wygrane']
         remisy = pd_result[(pd_result['home_team'] == team_2) & (pd_result['away_team'] == team_1)].iloc[0]['remis']
     else:
         print("nie bylo zadnych takich meczow")
@@ -220,7 +223,29 @@ def analyze_games(team_1, team_2):
           f"{team_2} wygrał: {wygrane_team_2} \n "
           f"remisow: {remisy}")
 
+    result_dict = {"liczba_meczy": suma_meczow,
+                   "wygrane_team_1": wygrane_team_1,
+                   "wygrane_team_2": wygrane_team_2,
+                   "remisy": remisy,
+                   "last_game":find_last_game(team_1,team_2)}
+
+    return result_dict
+
+
+def find_last_game(team_1, team_2):
+    df = pd.read_csv("C:/Users/Uzytkownik/PycharmProjects/dash_lib/international_matches.csv")
+    assert (team_1 in df.home_team.unique()) | (team_1 in df.away_team.unique()), "druzyny 1 nie ma"
+    assert (team_2 in df.home_team.unique()) | (team_2 in df.away_team.unique()), "druzyny 2 nie ma"
+
+    last_home = df[(df['home_team']==team_1)&(df['away_team'] ==team_2)].tail(1)
+    last_away = df[(df['away_team']==team_1)&(df['home_team'] ==team_2)].tail(1)
+
+    diff = pd.to_datetime(last_away.iloc[0]['date'])-pd.to_datetime(last_home.iloc[0]['date'])
+
+    if (diff.days > 0):
+        return last_away
+    return last_home
 
 
 if __name__ == '__main__':
-    generate_graph_1()
+    print(analyze_games("France", "Poland"))
