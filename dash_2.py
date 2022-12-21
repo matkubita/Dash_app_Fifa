@@ -248,4 +248,5 @@ def find_last_game(team_1, team_2):
 
 
 if __name__ == '__main__':
+    analyze_data()
     print(analyze_games("France", "Poland"))

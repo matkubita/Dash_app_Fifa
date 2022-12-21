@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import dash_2
+from dash import html
+import assets
 
 
 def main():
@@ -24,7 +26,154 @@ def main():
 
 
     #customize layout
-    app.layout = dbc.Container([my_title, my_graph,dropdown])
+    # app.layout = dbc.Container([my_title, my_graph,dropdown])
+
+    app.layout = html.Div([
+        html.Div([
+            #...
+            html.Div([
+                html.Div([
+                    html.H3("Covid - 19", style={"margin-bottom": "0px", 'color': 'white'}),
+                    html.H5("Track Covid - 19 Cases", style={"margin-top": "0px", 'color': 'white'}),
+                ])
+            ], className="twelve columns", id="title"),
+
+
+
+        ], id="header", className="row flex-display", style={"margin-bottom": "25px"}),
+
+        html.Div([
+            html.Div([
+                html.H6(children='Global Cases',
+                        style={
+                            'textAlign': 'center',
+                            'color': 'white'}
+                        ),
+
+                html.P(f"{754}",
+                       style={
+                           'textAlign': 'center',
+                           'color': 'orange',
+                           'fontSize': 40}
+                       ),
+
+                html.P('new:  321',
+                       style={
+                           'textAlign': 'center',
+                           'color': 'orange',
+                           'fontSize': 15,
+                           'margin-top': '-18px'}
+                       )], className="card_container three columns",
+            ),
+
+            html.Div([
+                html.H6(children='Global Deaths',
+                        style={
+                            'textAlign': 'center',
+                            'color': 'white'}
+                        ),
+
+                html.P(f"{532}",
+                       style={
+                           'textAlign': 'center',
+                           'color': '#dd1e35',
+                           'fontSize': 40}
+                       ),
+
+                html.P('new:',
+                       style={
+                           'textAlign': 'center',
+                           'color': '#dd1e35',
+                           'fontSize': 15,
+                           'margin-top': '-18px'}
+                       )], className="card_container three columns",
+            ),
+
+            html.Div([
+                html.H6(children='Global Recovered',
+                        style={
+                            'textAlign': 'center',
+                            'color': 'white'}
+                        ),
+
+                html.P(f"{5325}",
+                       style={
+                           'textAlign': 'center',
+                           'color': 'green',
+                           'fontSize': 40}
+                       ),
+
+                html.P('new: 4324 ',
+                       style={
+                           'textAlign': 'center',
+                           'color': 'green',
+                           'fontSize': 15,
+                           'margin-top': '-18px'}
+                       )], className="card_container three columns",
+            ),
+
+            html.Div([
+                html.H6(children='Global Active',
+                        style={
+                            'textAlign': 'center',
+                            'color': 'white'}
+                        ),
+
+                html.P(f"{5325}",
+                       style={
+                           'textAlign': 'center',
+                           'color': '#e55467',
+                           'fontSize': 40}
+                       ),
+
+                html.P('new: 6436 ',
+                       style={
+                           'textAlign': 'center',
+                           'color': '#e55467',
+                           'fontSize': 15,
+                           'margin-top': '-18px'}
+                       )], className="card_container three columns")
+
+        ], className="row flex-display"),
+
+        html.Div([
+            html.Div([
+
+                html.P('Select Country:', className='fix_label', style={'color': 'white'}),
+
+                dcc.Dropdown(id='w_countries',
+                             multi=False,
+                             clearable=True,
+                             value='321',
+                             placeholder='Select Countries',
+                             options=['321','42'], className='dcc_compon'),
+                html.P('New Cases : ',
+                       className='fix_label',
+                       style={'color': 'white', 'text-align': 'center'})
+
+
+
+            ], className="create_container three columns", id="cross-filter-options"),
+
+        ], className="row flex-display"),
+
+        html.Div([
+            html.Div([
+                html.H6(children='Global Cases',
+                        style={
+                            'textAlign': 'center',
+                            'color': 'white'}
+                        )
+
+        ], className="row flex-display"),
+
+        ], id = 'cos', style={"display": "flex", "flex-direction": "column"})
+
+        ],
+        id="mainContainer",
+        style={"display": "flex", "flex-direction": "column"}
+
+    )
 
     #allowing components to interact with each other
     @app.callback(
