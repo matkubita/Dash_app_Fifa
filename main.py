@@ -92,49 +92,55 @@ def main():
             ),
 
             html.Div([
-                html.H6(children='Global Recovered',
+                html.H6(children='Games played',
                         style={
                             'textAlign': 'center',
                             'color': 'white'}
                         ),
 
-                html.P(f"{5325}",
-                       style={
-                           'textAlign': 'center',
-                           'color': 'green',
-                           'fontSize': 40}
-                       ),
+                html.Div(id="games_played_123",
+                         style={
+                             'textAlign': 'center',
+                             'color': '#D6DBD2',
+                             'fontSize': 40}
+                         ),
 
-                html.P('new: 4324 ',
-                       style={
-                           'textAlign': 'center',
-                           'color': 'green',
-                           'fontSize': 15,
-                           'margin-top': '-18px'}
-                       )], className="card_container three columns",
+            ], className="card_container three columns",
             ),
 
             html.Div([
-                html.H6(children='Global Active',
+                html.H6(children='Scores',
                         style={
                             'textAlign': 'center',
                             'color': 'white'}
                         ),
 
-                html.P(f"{5325}",
-                       style={
+                html.Div(id='mean_offense123',
+                         style={
                            'textAlign': 'center',
-                           'color': '#e55467',
-                           'fontSize': 40}
-                       ),
+                           'color': '#D6DBD2',
+                           'fontSize': 19}
+                         ),
+                html.Div(id='mean_defense123',
+                         style={
+                             'textAlign': 'center',
+                             'color': '#D6DBD2',
+                             'fontSize': 19}
+                         ),
+                html.Div(id='mean_field123',
+                         style={
+                             'textAlign': 'center',
+                             'color': '#D6DBD2',
+                             'fontSize': 19}
+                         ),
+                dcc.Graph(id='graph_score123',
+                          config={'displayModeBar': False},
+                          className='dcc_compon',
+                          style={'margin-top': '20px'},
+                          ),
 
-                html.P('new: 6436 ',
-                       style={
-                           'textAlign': 'center',
-                           'color': '#e55467',
-                           'fontSize': 15,
-                           'margin-top': '-18px'}
-                       )], className="card_container three columns")
+
+            ], className="card_container three columns")
 
         ], className="row flex-display"),
 
@@ -309,9 +315,110 @@ def main():
         stracone = dict_res.get("last_game_goals_stracone")
         return "Last game:" + str(stracone)
 
+    @app.callback(
+        Output('games_played_123', 'children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateGamesPlayed(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        mecze = dict_res.get("rozegrane_mecze")
+        return str(mecze)
 
+    @app.callback(
+        Output('mean_offense123', 'children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateOffense(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        off = dict_res.get("mean_offense")
+        return "Mean offense score: " + str(off)
 
+    @app.callback(
+        Output('mean_defense123', 'children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateDefense(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        defe = dict_res.get("mean_defense")
+        return "Mean defense score: " + str(defe)
 
+    @app.callback(
+        Output('mean_field123', 'children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateMidfield(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        fieldmid = dict_res.get("mean_midfield")
+        return "Mean midfield score: " + str(fieldmid)
+
+    @app.callback(
+        Output('graph_score123', 'figure'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateGraphScore(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        score12 = dict_res.get("mean_midfield")
+
+        labels = ['score', 'nic']
+        values = [score12, 100 - score12]
+        colors = ['green', 'white']
+
+        # Use `hole` to create a donut-like pie chart
+        fig = go.Figure(data=[go.Pie(labels=labels,
+                                     values=values,
+                                     hole=.7,
+                                     showlegend=False)])
+        fig.update_traces(marker=dict(colors=colors))
+        fig.update_traces(textinfo='none')
+        fig.add_annotation(text=str(score12),
+                           font=dict(size=30, family='Verdana', color='black'),
+                           showarrow=False)
+        return {
+            'data': [go.Pie(labels=labels,
+                            values=values,
+                            marker=dict(colors=colors),
+                            textinfo='none',
+                            textfont=dict(size=13),
+                            showlegend=False,
+                            hole=.7,
+                            # insidetextorientation='radial',
+
+                            )],
+
+            'layout': go.Layout(
+                # width=800,
+                # height=520,
+                plot_bgcolor='#1f2c56',
+                paper_bgcolor='#1f2c56',
+                hovermode='closest',
+                annotations=[{
+                    'text':str(score12),
+                    'x':0.5,
+                    'y':0.5,
+                    'showarrow':False,
+                    'font':{'size':30, 'family':'Verdana', 'color':'black'}}
+                ],
+                title={
+                    'text': 'Total Cases : fds',
+
+                    'y': 0.93,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top'},
+                titlefont={
+                    'color': 'white',
+                    'size': 20},
+                legend={
+                    'orientation': 'h',
+                    'bgcolor': '#1f2c56',
+                    'xanchor': 'center', 'x': 0.5, 'y': -0.07},
+                font=dict(
+                    family="sans-serif",
+                    size=12,
+                    color='white')
+            ),
+
+        }
 
 
 

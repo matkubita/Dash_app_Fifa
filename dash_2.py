@@ -32,6 +32,29 @@ def main():
     print(dict_res.get("last_game_goals"))
 
 
+    #DONUT CHART
+
+    score12 = dict_res.get("mean_midfield")
+
+
+    labels = ['score', 'nic']
+    values = [score12, 100-score12]
+    colors = ['green', 'white']
+
+    # Use `hole` to create a donut-like pie chart
+    fig = go.Figure(data=[go.Pie(labels=labels,
+                                 values=values,
+                                 hole=.7,
+                                 showlegend=False)])
+    fig.update_traces(marker=dict(colors=colors))
+    fig.update_traces(textinfo='none')
+    fig.add_annotation(text = str(score12),
+                       font=dict(size=120,family='Verdana',color='black'),
+                       showarrow=False)
+    fig.show()
+
+
+
 
 
 def generate_graph_1():
@@ -110,9 +133,9 @@ def analyze_team(team_name):
                       "stracone_gole": gole_stracone_w_sumie,
                       "bilans_goli": bilans,
                       "rozegrane_mecze": liczba_meczy_suma,
-                      "mean_offense": mean_offense,
-                      "mean_defense": mean_defense,
-                      "mean_midfield": mean_midfield,
+                      "mean_offense": mean_offense.__round__(2),
+                      "mean_defense": mean_defense.__round__(2),
+                      "mean_midfield": mean_midfield.__round__(2),
                       "last_game":last_game ,
                       "last_game_goals":last_game_goals,
                       "last_game_goals_stracone": last_game_goals_stracone}
