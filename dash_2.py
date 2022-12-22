@@ -24,7 +24,14 @@ def main():
 
     # ad.3 przeciwnik najtrudniejszy i naltwiejszy -> czyli z kim wygrali najwiecej meczow i z kim przegrali najwiecej meczow
 
-    print(analyze_team("France"))
+
+    df = pd.read_csv("C:/Users/Uzytkownik/PycharmProjects/dash_lib/international_matches.csv")
+
+    dict_res = analyze_team("Australia")
+
+    print(dict_res.get("last_game_goals"))
+
+
 
 
 def generate_graph_1():
@@ -88,6 +95,17 @@ def analyze_team(team_name):
     mean_midfield_score_away = df_team.loc[df["away_team"] == team_name]['away_team_mean_midfield_score'].mean()
     mean_midfield = (mean_midfield_score_home + mean_midfield_score_away) / 2
 
+    last_game = df_team.tail(1)
+
+
+    last_game_goals = last_game["home_team_score"].values[0]
+    last_game_goals_stracone = last_game["away_team_score"].values[0]
+
+    if (last_game['away_team'].values[0]==team_name):
+        last_game_goals = last_game["away_team_score"].values[0]
+        last_game_goals_stracone = last_game["home_team_score"].values[0]
+
+
     result_tablica = {"zdobyte_gole": liczba_goli_suma,
                       "stracone_gole": gole_stracone_w_sumie,
                       "bilans_goli": bilans,
@@ -95,7 +113,10 @@ def analyze_team(team_name):
                       "mean_offense": mean_offense,
                       "mean_defense": mean_defense,
                       "mean_midfield": mean_midfield,
-                      "last_game": df_team.tail(1)}
+                      "last_game":last_game ,
+                      "last_game_goals":last_game_goals,
+                      "last_game_goals_stracone": last_game_goals_stracone}
+
 
     return result_tablica
 
@@ -247,6 +268,7 @@ def find_last_game(team_1, team_2):
     return last_home
 
 
+
+
 if __name__ == '__main__':
-    analyze_data()
-    print(analyze_games("France", "Poland"))
+    main()

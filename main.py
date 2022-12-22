@@ -15,7 +15,7 @@ def main():
     app = Dash(__name__, external_stylesheets=[dbc.themes.MINTY])
 
     #get data frame
-    df = px.data.medals_long()
+    df = pd.read_csv("C:/Users/Uzytkownik/PycharmProjects/dash_lib/international_matches.csv")
 
     #building components
     my_title = dcc.Markdown(children='My first graph in DASH')
@@ -30,11 +30,10 @@ def main():
 
     app.layout = html.Div([
         html.Div([
-            #...
             html.Div([
                 html.Div([
-                    html.H3("Covid - 19", style={"margin-bottom": "0px", 'color': 'white'}),
-                    html.H5("Track Covid - 19 Cases", style={"margin-top": "0px", 'color': 'white'}),
+                    html.H1("FIFA WORLD CUP", style={"margin-bottom": "0px", 'color': 'white'}),
+                    html.H5("DATA ANALYSIS BY MATEUSZ KUBITA", style={"margin-top": "0px", 'color': 'white'}),
                 ])
             ], className="twelve columns", id="title"),
 
@@ -44,49 +43,52 @@ def main():
 
         html.Div([
             html.Div([
-                html.H6(children='Global Cases',
+                html.H6(children='Scored goals',
                         style={
                             'textAlign': 'center',
                             'color': 'white'}
                         ),
-
-                html.P(f"{754}",
-                       style={
+                html.Div(id="zdobyte_gole123",
+                         style={
                            'textAlign': 'center',
-                           'color': 'orange',
-                           'fontSize': 40}
-                       ),
-
-                html.P('new:  321',
+                           'color': '#D6DBD2',
+                           'fontSize': 40}),
+                html.P(id="last_game_goals",
                        style={
                            'textAlign': 'center',
                            'color': 'orange',
                            'fontSize': 15,
                            'margin-top': '-18px'}
-                       )], className="card_container three columns",
+                       ),
+
+
+
+                ], className="card_container three columns",
             ),
 
             html.Div([
-                html.H6(children='Global Deaths',
+                html.H6(children='Conceded goals',
                         style={
                             'textAlign': 'center',
                             'color': 'white'}
                         ),
-
-                html.P(f"{532}",
+                html.Div(id="stracone_bramki123",
+                         style={
+                             'textAlign': 'center',
+                             'color': '#D6DBD2',
+                             'fontSize': 40}
+                         ),
+                html.P(id="last_game_goals_stracone",
                        style={
                            'textAlign': 'center',
-                           'color': '#dd1e35',
-                           'fontSize': 40}
-                       ),
-
-                html.P('new:',
-                       style={
-                           'textAlign': 'center',
-                           'color': '#dd1e35',
+                           'color': 'orange',
                            'fontSize': 15,
                            'margin-top': '-18px'}
-                       )], className="card_container three columns",
+                       ),
+
+
+            ], className="card_container three columns",
+
             ),
 
             html.Div([
@@ -141,16 +143,20 @@ def main():
 
                 html.P('Select Country:', className='fix_label', style={'color': 'white'}),
 
-                dcc.Dropdown(id='w_countries',
+                dcc.Dropdown(id='country_selection',
                              multi=False,
                              clearable=True,
-                             value='321',
+                             value='Poland',
                              placeholder='Select Countries',
-                             options=['321','42'], className='dcc_compon'),
+                             options=df["home_team"].unique(), className='dcc_compon'),
                 html.P('New Cases : ',
                        className='fix_label',
-                       style={'color': 'white', 'text-align': 'center'})
+                       style={'color': 'white', 'text-align': 'center'}),
 
+                dcc.Graph(id="graph_1",
+                          config={'displayModeBar':False},
+                          className='dcc_compon',
+                          style={'margin-top':'20px'})
 
 
             ], className="create_container three columns", id="cross-filter-options"),
@@ -177,26 +183,141 @@ def main():
 
     #allowing components to interact with each other
     @app.callback(
-        Output(my_graph, component_property='figure'),
-        Input(dropdown, component_property='value')
+        Output('graph_1', component_property='figure'),
+        Input("country_selection", component_property='value')
     )
-    def update_graph(user_input):
-        dict_res = dash_2.analyze_team("Poland")
-        if (user_input=='Bar Plot'):
+    def update_graph_with_country_selection(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+
+        zdobyte_gole = dict_res.get("zdobyte_gole")
+        stracone_gole = dict_res.get("stracone")
+        fig = go.Pie(labels=['Zdobyte Gole', 'Stracone gole'],
+                     values=[32, 321])
+
+        df = px.data.medals_long()
+        fig = px.scatter(data_frame=df, x="count", y="nation", color="medal",
+                         title="Elegancki Scatter Plot",
+                         labels={
+                             "count": "licznosc",
+                             "nation": "Panstwo, nacja",
+                             "medal": "jaki medal"
+                         })
+
+        df = px.data.tips()
+        fig = px.pie(df, values='tip', names='day', color_discrete_sequence=px.colors.sequential.RdBu)
+
+        fig = go.Figure(go.Sunburst(
+            labels=["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"],
+            parents=["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"],
+            values=[10, 14, 12, 10, 2, 6, 6, 4, 4],
+        ))
+        fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
 
 
-            fig = go.Figure(go.Indicator(
-                mode="gauge+number",
-                value=dict_res.get("zdobyte_gole"),
-                title={'text': "Zdobyte gole"},
-                domain={'x': [0, 1], 'y': [0, 1]}
-            ))
-        elif (user_input=="Scatter Plot"):
-            zdobyte_gole = dict_res.get("zdobyte_gole")
-            stracone_gole = dict_res.get("strcone_gole")
-            fig = go.Pie(labels=['Zdobyte Gole', 'Stracone gole'],
-                         values=[zdobyte_gole, stracone_gole])
-        return fig
+        zdobyte_gole = dict_res.get("zdobyte_gole")
+        stracone_gole = dict_res.get("stracone_gole")
+        mecze = dict_res.get("rozegrane_mecze")
+
+        fig = go.Figure(go.Sunburst(
+            labels=['rozegrane mecze', 'zdobyte gole', 'stracone gole'],
+            parents=['', 'rozegrane mecze', 'rozegrane mecze'],
+            values=[mecze, zdobyte_gole, stracone_gole],
+        ))
+        fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+        # return fig
+        colors = ['orange', '#dd1e35', 'green']
+        # '#e55467'
+
+
+
+        return {
+            'data': [go.Pie(labels=['rozegrane mecze', 'zdobyte gole', 'stracone gole'],
+                            values=[mecze, zdobyte_gole, stracone_gole],
+                            marker=dict(colors=colors),
+                            hoverinfo='label+value+percent',
+                            textinfo='label+value',
+                            textfont=dict(size=13),
+                            hole=.7,
+                            rotation=45
+                            # insidetextorientation='radial',
+
+                            )],
+
+            'layout': go.Layout(
+                # width=800,
+                # height=520,
+                plot_bgcolor='#1f2c56',
+                paper_bgcolor='#1f2c56',
+                hovermode='closest',
+                title={
+                    'text': 'Total Cases : fds',
+
+                    'y': 0.93,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top'},
+                titlefont={
+                    'color': 'white',
+                    'size': 20},
+                legend={
+                    'orientation': 'h',
+                    'bgcolor': '#1f2c56',
+                    'xanchor': 'center', 'x': 0.5, 'y': -0.07},
+                font=dict(
+                    family="sans-serif",
+                    size=12,
+                    color='white')
+            ),
+
+        }
+
+
+
+    @app.callback(
+        Output('zdobyte_gole123','children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateZdobyteGole(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        zdobyte_gole = dict_res.get("zdobyte_gole")
+        return zdobyte_gole
+
+    @app.callback(
+        Output('last_game_goals', 'children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateZdobyteGole(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        zdobyte_gole = dict_res.get("last_game_goals")
+        return "Last game:" + str(zdobyte_gole)
+
+    @app.callback(
+        Output('stracone_bramki123', 'children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateStraconeBramki(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        stracone = dict_res.get("stracone_gole")
+        return stracone
+
+    @app.callback(
+        Output('last_game_goals_stracone', 'children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateStraconeBramkiOstatnie(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        stracone = dict_res.get("last_game_goals_stracone")
+        return "Last game:" + str(stracone)
+
+
+
+
+
+
+
+
+
+
 
     # run the app
     app.run_server(port=8052)
