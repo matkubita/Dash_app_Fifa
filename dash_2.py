@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import numpy as np
 import pandas as pd
+from random import sample
 
 pd.options.mode.chained_assignment = None
 import plotly.graph_objects as go
@@ -37,21 +38,21 @@ def main():
     score12 = dict_res.get("mean_midfield")
 
 
-    labels = ['score', 'nic']
-    values = [score12, 100-score12]
-    colors = ['green', 'white']
-
-    # Use `hole` to create a donut-like pie chart
-    fig = go.Figure(data=[go.Pie(labels=labels,
-                                 values=values,
-                                 hole=.7,
-                                 showlegend=False)])
-    fig.update_traces(marker=dict(colors=colors))
-    fig.update_traces(textinfo='none')
-    fig.add_annotation(text = str(score12),
-                       font=dict(size=120,family='Verdana',color='black'),
-                       showarrow=False)
-    fig.show()
+    # labels = ['score', 'nic']
+    # values = [score12, 100-score12]
+    # colors = ['green', 'white']
+    #
+    # # Use `hole` to create a donut-like pie chart
+    # fig = go.Figure(data=[go.Pie(labels=labels,
+    #                              values=values,
+    #                              hole=.7,
+    #                              showlegend=False)])
+    # fig.update_traces(marker=dict(colors=colors))
+    # fig.update_traces(textinfo='none')
+    # fig.add_annotation(text = str(score12),
+    #                    font=dict(size=120,family='Verdana',color='black'),
+    #                    showarrow=False)
+    # fig.show()
 
 
 
@@ -141,7 +142,29 @@ def analyze_team(team_name):
                       "last_game_goals_stracone": last_game_goals_stracone}
 
 
+
     return result_tablica
+
+def info_last_game(team_name):
+    df = pd.read_csv("C:/Users/Uzytkownik/PycharmProjects/dash_lib/international_matches.csv")
+    df_team = df[(df["home_team"] == team_name) | (df["away_team"] == team_name)]
+    last_game = df_team.tail(1)
+
+
+    result = {"home_team":last_game["home_team"].values[0],
+              "away_team":last_game["away_team"].values[0],
+              "home_team_score": last_game["home_team_score"].values[0],
+              "away_team_score":last_game["away_team_score"].values[0],
+              'home_team_mean_offense_score': last_game['home_team_mean_offense_score'].values[0],
+              'away_team_mean_offense_score': last_game['away_team_mean_offense_score'].values[0],
+              'home_team_mean_defense_score': last_game['home_team_mean_defense_score'].values[0],
+              'away_team_mean_defense_score': last_game['away_team_mean_defense_score'].values[0],
+              'date': last_game['date'].values[0]
+    }
+    return result
+
+
+
 
 
 def analyze_data():
@@ -290,8 +313,25 @@ def find_last_game(team_1, team_2):
         return last_away
     return last_home
 
+def analyze_mean_offense_score():
+    df = pd.read_csv("C:/Users/Uzytkownik/PycharmProjects/dash_lib/international_matches.csv")
+
+
+    df_mean_off_teams = df.groupby(['home_team'])['home_team_mean_offense_score'].mean().reset_index()
+    df_mean_off_teams.sort_values(by = ['home_team_mean_offense_score'], inplace=True, ascending=False)
+    df_mean_off_teams.dropna(inplace=True)
+
+    lista_kraje = df_mean_off_teams['home_team'].tolist()
+    lista_scores = df_mean_off_teams['home_team_mean_offense_score'].tolist()
+
+
+    randomowe_indexy = sample(range(0,115),10)
+    randomowe1 = [[lista_kraje[x] for x in randomowe_indexy],[lista_scores[x] for x in randomowe_indexy]]
+    najlepsze1 = [lista_kraje[:10],lista_scores[:10]]
+
+    return randomowe1
 
 
 
 if __name__ == '__main__':
-    main()
+    analyze_mean_offense_score()

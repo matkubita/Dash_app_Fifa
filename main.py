@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import dash_2
 from dash import html
 import assets
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -109,35 +110,32 @@ def main():
             ),
 
             html.Div([
-                html.H6(children='Scores',
+                html.Div([
+                    html.H6(children='Mean Offense Score: ',
                         style={
                             'textAlign': 'center',
                             'color': 'white'}
                         ),
-
-                html.Div(id='mean_offense123',
-                         style={
-                           'textAlign': 'center',
-                           'color': '#D6DBD2',
-                           'fontSize': 19}
-                         ),
-                html.Div(id='mean_defense123',
-                         style={
-                             'textAlign': 'center',
-                             'color': '#D6DBD2',
-                             'fontSize': 19}
-                         ),
-                html.Div(id='mean_field123',
-                         style={
-                             'textAlign': 'center',
-                             'color': '#D6DBD2',
-                             'fontSize': 19}
-                         ),
-                dcc.Graph(id='graph_score123',
+                    dcc.Graph(id='graph_score123',
                           config={'displayModeBar': False},
                           className='dcc_compon',
                           style={'margin-top': '20px'},
                           ),
+                ],className='five columns'),
+                html.Div([
+                    html.H6(children='Mean Defense Score: ',
+                            style={
+                                'textAlign': 'center',
+                                'color': 'white'}
+                            ),
+                    dcc.Graph(id='graph_scoreDEF',
+                              config={'displayModeBar': False},
+                              className='dcc_compon',
+                              style={'margin-top': '20px'},
+                              ),
+
+
+                ],className='five columns ')
 
 
             ], className="card_container three columns")
@@ -155,9 +153,12 @@ def main():
                              value='Poland',
                              placeholder='Select Countries',
                              options=df["home_team"].unique(), className='dcc_compon'),
-                html.P('New Cases : ',
-                       className='fix_label',
-                       style={'color': 'white', 'text-align': 'center'}),
+                html.Div(id = "last_game_date123",
+                         style={
+                             'textAlign': 'center',
+                             'color': '#D6DBD2',
+                             'fontSize': 22}
+                         ),
 
                 dcc.Graph(id="graph_1",
                           config={'displayModeBar':False},
@@ -167,19 +168,23 @@ def main():
 
             ], className="create_container three columns", id="cross-filter-options"),
 
-        ], className="row flex-display"),
-
-        html.Div([
             html.Div([
-                html.H6(children='Global Cases',
-                        style={
-                            'textAlign': 'center',
-                            'color': 'white'}
-                        )
+                html.P("532",
+                       style={
+                           'textAlign': 'center',
+                           'color': 'orange',
+                           'fontSize': 15,
+                           'margin-top': '-18px'}
+                       ),
+
+            ], className="create_container four columns"),
+            html.Div([
+                dcc.Graph(id='map123', className='create_container1 twelve columns'),
+
+            ], className="create_container four columns"),
+
 
         ], className="row flex-display"),
-
-        ], id = 'cos', style={"display": "flex", "flex-direction": "column"})
 
         ],
         id="mainContainer",
@@ -357,9 +362,9 @@ def main():
     )
     def updateGraphScore(user_input):
         dict_res = dash_2.analyze_team(user_input)
-        score12 = dict_res.get("mean_midfield")
+        score12 = dict_res.get("mean_offense")
 
-        labels = ['score', 'nic']
+        labels = ['score', '-']
         values = [score12, 100 - score12]
         colors = ['green', 'white']
 
@@ -373,6 +378,7 @@ def main():
         fig.add_annotation(text=str(score12),
                            font=dict(size=30, family='Verdana', color='black'),
                            showarrow=False)
+
         return {
             'data': [go.Pie(labels=labels,
                             values=values,
@@ -386,25 +392,19 @@ def main():
                             )],
 
             'layout': go.Layout(
-                # width=800,
-                # height=520,
+                # autosize=True,
+                width=250,
+                height=250,
                 plot_bgcolor='#1f2c56',
                 paper_bgcolor='#1f2c56',
                 hovermode='closest',
                 annotations=[{
-                    'text':str(score12),
+                    'text':"<b>" +str(score12) +"</b>",
                     'x':0.5,
                     'y':0.5,
                     'showarrow':False,
-                    'font':{'size':30, 'family':'Verdana', 'color':'black'}}
+                    'font':{'size':17, 'family':'Verdana', 'color':'black'}}
                 ],
-                title={
-                    'text': 'Total Cases : fds',
-
-                    'y': 0.93,
-                    'x': 0.5,
-                    'xanchor': 'center',
-                    'yanchor': 'top'},
                 titlefont={
                     'color': 'white',
                     'size': 20},
@@ -419,6 +419,169 @@ def main():
             ),
 
         }
+
+    @app.callback(
+        Output('graph_scoreDEF', 'figure'),
+        [Input('country_selection', component_property='value')]
+    )
+    def updateGraphScoreDEF(user_input):
+        dict_res = dash_2.analyze_team(user_input)
+        score12 = dict_res.get("mean_defense")
+
+        labels = ['score', '-']
+        values = [score12, 100 - score12]
+        colors = ['green', 'white']
+
+        # Use `hole` to create a donut-like pie chart
+        fig = go.Figure(data=[go.Pie(labels=labels,
+                                     values=values,
+                                     hole=.7,
+                                     showlegend=False)])
+        fig.update_traces(marker=dict(colors=colors))
+        fig.update_traces(textinfo='none')
+        fig.add_annotation(text=str(score12),
+                           font=dict(size=30, family='Verdana', color='black'),
+                           showarrow=False)
+
+        return {
+            'data': [go.Pie(labels=labels,
+                            values=values,
+                            marker=dict(colors=colors),
+                            textinfo='none',
+                            textfont=dict(size=13),
+                            showlegend=False,
+                            hole=.7,
+                            # insidetextorientation='radial',
+
+                            )],
+
+            'layout': go.Layout(
+                autosize=False,
+                width=250,
+                height=250,
+                plot_bgcolor='#1f2c56',
+                paper_bgcolor='#1f2c56',
+                hovermode='closest',
+                annotations=[{
+                    'text': "<b>" + str(score12) + "</b>",
+                    'x': 0.5,
+                    'y': 0.5,
+                    'showarrow': False,
+                    'font': {'size': 17, 'family': 'Verdana', 'color': 'black'}}
+                ],
+                titlefont={
+                    'color': 'white',
+                    'size': 20},
+                legend={
+                    'orientation': 'h',
+                    'bgcolor': '#1f2c56',
+                    'xanchor': 'center', 'x': 0.5, 'y': -0.07},
+                font=dict(
+                    family="sans-serif",
+                    size=12,
+                    color='white')
+            ),
+
+        }
+
+    @app.callback(
+        Output('last_game_date123', 'children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def update_date_last_game(user_input):
+        res_dict = dash_2.info_last_game(user_input)
+        return "Last game date: " + str(res_dict.get('date'))
+    @app.callback(
+        Output('siemano_kolano', 'children'),
+        [Input('country_selection', component_property='value')]
+    )
+    def update_napis(user_input):
+        return str(user_input)
+
+    @app.callback(
+        Output('map123', 'figure'),
+        [Input('country_selection', component_property='value')]
+    )
+    def update_graph(user_input):
+        res = dash_2.analyze_mean_offense_score()
+        kraje = res[0]
+        scores = res[1]
+
+        return {
+            'data': [go.Bar(x=kraje,
+                            y=scores,
+
+                            name='Daily confirmed',
+                            marker=dict(
+                                color='orange'),
+                            hoverinfo='text'
+
+                            ),
+                     ],
+
+            'layout': go.Layout(
+                plot_bgcolor='#1f2c56',
+                paper_bgcolor='#1f2c56',
+                title={
+                    'text': 'Mean Offense Score by Nation',
+                    'y': 0.93,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top'},
+                titlefont={
+                    'color': 'white',
+                    'size': 20},
+
+                hovermode='x',
+                margin=dict(r=0),
+                xaxis=dict(title='<b>Nation</b>',
+                           color='white',
+                           showline=True,
+                           showgrid=True,
+                           showticklabels=True,
+                           linecolor='white',
+                           linewidth=2,
+                           ticks='outside',
+                           tickfont=dict(
+                               family='Arial',
+                               size=12,
+                               color='white'
+                           )
+
+                           ),
+
+                yaxis=dict(title='<b>Mean Offense Score</b>',
+                           color='white',
+                           showline=True,
+                           showgrid=True,
+                           range=[50,90],
+                           showticklabels=True,
+                           linecolor='white',
+                           linewidth=2,
+                           ticks='outside',
+                           tickfont=dict(
+                               family='Arial',
+                               size=12,
+                               color='white'
+                           )
+
+                           ),
+
+                legend={
+                    'orientation': 'h',
+                    'bgcolor': '#1f2c56',
+                    'xanchor': 'center', 'x': 0.5, 'y': -0.3},
+                font=dict(
+                    family="sans-serif",
+                    size=12,
+                    color='white'),
+
+            )
+
+        }
+
+
+
 
 
 
