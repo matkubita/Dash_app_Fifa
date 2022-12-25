@@ -116,11 +116,11 @@ def main():
                             'textAlign': 'center',
                             'color': 'white'}
                         ),
-                    dcc.Graph(id='graph_score123',
-                          config={'displayModeBar': False},
-                          className='dcc_compon',
-                          style={'margin-top': '20px'},
-                          ),
+                    # dcc.Graph(id='graph_score123',
+                    #       config={'displayModeBar': False},
+                    #       className='dcc_compon',
+                    #       style={'margin-top': '20px'},
+                    #       ),
                 ],className='five columns'),
                 html.Div([
                     html.H6(children='Mean Defense Score: ',
@@ -128,11 +128,7 @@ def main():
                                 'textAlign': 'center',
                                 'color': 'white'}
                             ),
-                    dcc.Graph(id='graph_scoreDEF',
-                              config={'displayModeBar': False},
-                              className='dcc_compon',
-                              style={'margin-top': '20px'},
-                              ),
+
 
 
                 ],className='five columns ')
@@ -169,20 +165,38 @@ def main():
             ], className="create_container three columns", id="cross-filter-options"),
 
             html.Div([
-                html.P("532",
-                       style={
-                           'textAlign': 'center',
-                           'color': 'orange',
-                           'fontSize': 15,
-                           'margin-top': '-18px'}
-                       ),
+                html.H6(children='Team Statistics ',
+                        style={
+                            'textAlign': 'center',
+                            'color': 'white'}
+                        ),
+                html.H6(children='Mean Offense Score: ',
+                        style={
+                            # 'textAlign': 'center',
+                            'color': 'white'}
+                        ),
+                dcc.Graph(id='graph_score123',
+                          config={'displayModeBar': False},
+                          className='dcc_compon',
+                          style={'margin-top': '20px'},
+                          ),
+                html.H6(children='Mean Defense Score: ',
+                        style={
+                            # 'textAlign': 'center',
+                            'color': 'white'}
+                        ),
 
-            ], className="create_container four columns"),
+                dcc.Graph(id='graph_scoreDEF',
+                          config={'displayModeBar': False},
+                          className='dcc_compon',
+                          style={'margin-top': '20px'},
+                          ),
+
+            ], className="create_container three columns"),
             html.Div([
                 dcc.Graph(id='map123', className='create_container1 twelve columns'),
 
             ], className="create_container four columns"),
-
 
         ], className="row flex-display"),
 
@@ -199,50 +213,15 @@ def main():
     )
     def update_graph_with_country_selection(user_input):
         dict_res = dash_2.analyze_team(user_input)
-
-        zdobyte_gole = dict_res.get("zdobyte_gole")
-        stracone_gole = dict_res.get("stracone")
-        fig = go.Pie(labels=['Zdobyte Gole', 'Stracone gole'],
-                     values=[32, 321])
-
-        df = px.data.medals_long()
-        fig = px.scatter(data_frame=df, x="count", y="nation", color="medal",
-                         title="Elegancki Scatter Plot",
-                         labels={
-                             "count": "licznosc",
-                             "nation": "Panstwo, nacja",
-                             "medal": "jaki medal"
-                         })
-
-        df = px.data.tips()
-        fig = px.pie(df, values='tip', names='day', color_discrete_sequence=px.colors.sequential.RdBu)
-
-        fig = go.Figure(go.Sunburst(
-            labels=["Eve", "Cain", "Seth", "Enos", "Noam", "Abel", "Awan", "Enoch", "Azura"],
-            parents=["", "Eve", "Eve", "Seth", "Seth", "Eve", "Eve", "Awan", "Eve"],
-            values=[10, 14, 12, 10, 2, 6, 6, 4, 4],
-        ))
-        fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
-
-
         zdobyte_gole = dict_res.get("zdobyte_gole")
         stracone_gole = dict_res.get("stracone_gole")
         mecze = dict_res.get("rozegrane_mecze")
 
-        fig = go.Figure(go.Sunburst(
-            labels=['rozegrane mecze', 'zdobyte gole', 'stracone gole'],
-            parents=['', 'rozegrane mecze', 'rozegrane mecze'],
-            values=[mecze, zdobyte_gole, stracone_gole],
-        ))
-        fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
-        # return fig
         colors = ['orange', '#dd1e35', 'green']
         # '#e55467'
 
-
-
         return {
-            'data': [go.Pie(labels=['rozegrane mecze', 'zdobyte gole', 'stracone gole'],
+            'data': [go.Pie(labels=['Games played', 'Scored goals', 'Conceded goals'],
                             values=[mecze, zdobyte_gole, stracone_gole],
                             marker=dict(colors=colors),
                             hoverinfo='label+value+percent',
@@ -376,7 +355,7 @@ def main():
         fig.update_traces(marker=dict(colors=colors))
         fig.update_traces(textinfo='none')
         fig.add_annotation(text=str(score12),
-                           font=dict(size=30, family='Verdana', color='black'),
+                           font=dict(size=30, family='Verdana', color='white'),
                            showarrow=False)
 
         return {
@@ -393,8 +372,8 @@ def main():
 
             'layout': go.Layout(
                 # autosize=True,
-                width=250,
-                height=250,
+                width=330,
+                height=330,
                 plot_bgcolor='#1f2c56',
                 paper_bgcolor='#1f2c56',
                 hovermode='closest',
@@ -403,7 +382,7 @@ def main():
                     'x':0.5,
                     'y':0.5,
                     'showarrow':False,
-                    'font':{'size':17, 'family':'Verdana', 'color':'black'}}
+                    'font':{'size':17, 'family':'Verdana', 'color':'white'}}
                 ],
                 titlefont={
                     'color': 'white',
@@ -440,7 +419,7 @@ def main():
         fig.update_traces(marker=dict(colors=colors))
         fig.update_traces(textinfo='none')
         fig.add_annotation(text=str(score12),
-                           font=dict(size=30, family='Verdana', color='black'),
+                           font=dict(size=30, family='Verdana', color='white'),
                            showarrow=False)
 
         return {
@@ -457,8 +436,8 @@ def main():
 
             'layout': go.Layout(
                 autosize=False,
-                width=250,
-                height=250,
+                width=330,
+                height=330,
                 plot_bgcolor='#1f2c56',
                 paper_bgcolor='#1f2c56',
                 hovermode='closest',
@@ -467,7 +446,7 @@ def main():
                     'x': 0.5,
                     'y': 0.5,
                     'showarrow': False,
-                    'font': {'size': 17, 'family': 'Verdana', 'color': 'black'}}
+                    'font': {'size': 17, 'family': 'Verdana', 'color': 'white'}}
                 ],
                 titlefont={
                     'color': 'white',
